@@ -1,19 +1,25 @@
 class Duckbowling < Formula
-  desc "DuckBowling CLI tool"
-  homepage "https://github.com/zibuyin/duckbowling"
-  url "file:///path/to/duckbowling-1.0.0.tar.gz"
-  sha256 "<replace_with_actual_sha256>"
+  desc "Arcade bowling game with ducks"
+  homepage "https://github.com/zibuyin/homebrew-duckbowling"
+  url "file:///opt/homebrew/Library/Taps/zibuyin/homebrew-duckbowling/duckbowling-1.0.0.tar.gz"
+  sha256 "84ec68689c86c0d3f24f1b0a4aab4e415ff6e26236412041d12102190f915b1d"
 
   def install
-    # Install everything into libexec
-    libexec.install Dir["*"]
+    libexec.install "duckbowling", "resources"
+    ln_s libexec/"resources/data", libexec/"data"
+    ln_s libexec/"resources/shaders", libexec/"shaders"
 
-    # Wrap the binary so it can find resources
-    (bin/"duckbowling").write_env_script libexec/"duckbowling",
-      DUCKBOWLING_RESOURCES: "#{libexec}/resources"
+    (bin/"duckbowling").write <<~SH
+      #!/bin/bash
+      cd "#{libexec}" || exit 1
+      exec "./duckbowling" "$@"
+    SH
   end
 
   test do
-    system "#{bin}/duckbowling", "--version"
+    assert_path_exists libexec/"resources/shaders/shaders.json"
+    assert_predicate libexec/"data", :symlink?
+    assert_predicate libexec/"shaders", :symlink?
+    assert_path_exists bin/"duckbowling"
   end
 end
