@@ -10,6 +10,7 @@ Or, in a `brew bundle` `Brewfile`:
 
 ```bash
 brew install zibuyin/duckbowling/duckbowling
+duckbowling
 ```
 
 ## Documentation
