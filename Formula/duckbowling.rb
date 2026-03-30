@@ -1,8 +1,8 @@
 class Duckbowling < Formula
   desc "Arcade bowling game with ducks"
   homepage "https://github.com/zibuyin/homebrew-duckbowling"
-  url "file:///opt/homebrew/Library/Taps/zibuyin/homebrew-duckbowling/duckbowling-2.0.0.tar.gz"
-  sha256 "84ec68689c86c0d3f24f1b0a4aab4e415ff6e26236412041d12102190f915b1d"
+  url "https://github.com/zibuyin/homebrew-duckbowling/raw/refs/heads/main/duckbowling-3.0.0.tar.gz"
+  sha256 "2e90de3c93fa1bfd29990381a77f4da6aabca9dfc8a6b43047ddbe3bddc04e75"
 
   def install
     libexec.install "duckbowling", "resources"

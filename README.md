@@ -8,9 +8,8 @@ Or `brew tap zibuyin/duckbowling` and then `brew install <formula>`.
 
 Or, in a `brew bundle` `Brewfile`:
 
-```ruby
-tap "zibuyin/duckbowling"
-brew "<formula>"
+```bash
+brew install zibuyin/duckbowling/duckbowling
 ```
 
 ## Documentation
