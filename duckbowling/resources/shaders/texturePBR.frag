@@ -1,0 +1,215 @@
+#version 410 core
+
+out vec4 FragColor;
+
+in VS_OUT
+{
+    vec3 FragPos;
+    vec2 TexCoords;
+    vec3 TangentLightPos;
+    vec3 TangentViewPos;
+    vec3 TangentFragPos;
+    vec3 Normal;
+    mat3 TBN;
+}
+fs_in;
+
+uniform vec3 lightColor;
+
+// textures
+
+struct Material
+{
+    int useAlbedoTex;
+    int useMetallicTex;
+    int useRoughnessTex;
+    int useNormalTex;
+    int useAOTex;
+    int useEmissiveTex;
+
+    sampler2D albedoMap;
+    sampler2D metallicMap;
+    sampler2D roughnessMap;
+    sampler2D aoMap;
+    sampler2D normalMap;
+    sampler2D emissiveMap;
+
+    vec4 albedo;
+    float metallic;
+    float roughness;
+    vec3 emissiveFactor;
+    float emissiveIntensity;
+};
+
+uniform Material material;
+
+// IBL
+uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
+
+uniform vec3 viewPos;
+uniform vec3 lightPos;
+
+const float PI = 3.14159265359;
+
+// F0 = surface reflection at zero incidence
+vec3 fresnelSchlick(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+// normal distrobution function
+float distroGGX(vec3 norm, vec3 h, float roughness)
+{
+    // looks better with roughness^2
+    roughness = max(roughness, 0.0001);
+    float a = roughness * roughness;
+    float a2 = a * a; // a^2
+    float NdotH = max(dot(norm, h), 0.0);
+    float NdotH2 = NdotH * NdotH; // square it
+
+    // numerator
+    float num = a2;
+    // denominator
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return num / denom;
+}
+
+// geometry equation
+float geomSchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
+
+    // numerator
+    float num = NdotV;
+    // denominator
+    float denom = NdotV * (1.0 - k) + k;
+
+    return num / denom;
+}
+
+// the other geometry equation
+float geomSmith(vec3 norm, vec3 view, vec3 light, float roughness)
+{
+    float NdotV = max(dot(norm, view), 0.0);
+    float NdotL = max(dot(norm, light), 0.0);
+    float ggx2 = geomSchlickGGX(NdotV, roughness);
+    float ggx1 = geomSchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+void main()
+{
+    // albedo with g.c
+    vec4 albedoSample;
+    if (material.useAlbedoTex == 1)
+    {
+        albedoSample = texture(material.albedoMap, fs_in.TexCoords);
+    } else {
+        albedoSample = material.albedo;
+    }
+    vec3 albedo = pow(albedoSample.rgb, vec3(2.2));
+    float alpha = albedoSample.a;
+
+    float metallic;
+    if (material.useMetallicTex == 1)
+    {
+        metallic = texture(material.metallicMap, fs_in.TexCoords).r;
+    } else {
+        metallic = material.metallic;
+    }
+    float roughness;
+    if (material.useRoughnessTex == 1)
+    {
+        roughness = texture(material.roughnessMap, fs_in.TexCoords).r;
+    } else {
+        roughness = material.roughness;
+    }
+    float ao;
+    if (material.useAOTex == 1)
+    {
+        ao = texture(material.aoMap, fs_in.TexCoords).r;
+    } else {
+        ao = 1.0;
+    }
+
+    vec3 emissive;
+    if (material.useEmissiveTex == 1)
+    {
+        emissive = texture(material.emissiveMap, fs_in.TexCoords).rgb;
+    } else {
+        emissive = material.emissiveFactor * material.emissiveIntensity;
+    }
+
+    vec3 norm;
+    if (material.useNormalTex == 1)
+    {
+        norm = texture(material.normalMap, fs_in.TexCoords).rgb;
+        norm = normalize(norm * 2.0 - 1.0); // normal in tangent space
+    } else {
+        norm = normalize(transpose(fs_in.TBN) * fs_in.Normal);
+    }
+    vec3 V = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
+
+    // outgoing radiance
+    vec3 Lo = vec3(0.0);
+
+    // ---- calculate light radiance ---- //
+
+    vec3 L = normalize(fs_in.TangentLightPos - fs_in.TangentFragPos);
+    // half-vector
+    vec3 H = normalize(V + L);
+
+    // standard realistic attenuation
+    float attenuation = 1.0;
+    vec3 radiance = lightColor * attenuation;
+
+    // Cook-Torrance BDRF
+    // 1. Fresnel ratio
+    // surface reflectance at zero incidence
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, albedo, metallic);
+    // dot(H, V) = similarity with half-vector
+    // calculate fresnel
+    vec3 fresnel = fresnelSchlick(max(dot(H, V), 0.0), F0, roughness);
+    // 2. Normal Distro-Function
+    float NDF = distroGGX(norm, H, roughness);
+    // 3. Geometry overshadowing function
+    float geom = geomSmith(norm, V, L, roughness);
+
+    // calculate BDRF
+    vec3 num = NDF * geom * fresnel;
+    float denom = 4.0 * max(dot(norm, V), 0.0) * max(dot(norm, L), 0.0) + 0.0001;
+    vec3 specular = num / denom;
+
+    // calculate specular contribution
+    vec3 kS = fresnel; // specular
+    vec3 kD = vec3(1.0) - kS; // diffuse
+    kD *= 1.0 - metallic;
+
+    // finally calculate outgoing radiance
+    float NdotL = max(dot(norm, L), 0.0);
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+
+    // IBL
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 normWS = normalize(transpose(fs_in.TBN) * norm); // world space normal
+    vec3 viewWS = normalize(viewPos - fs_in.FragPos);
+    vec3 R = reflect(-viewWS, normWS);
+    vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 brdf = texture(brdfLUT, vec2(max(dot(normWS, viewWS), 0.0), roughness)).rg;
+    vec3 spec = prefilteredColor * (fresnel * brdf.x + brdf.y);
+
+    vec3 irradiance = texture(irradianceMap, normWS).rgb;
+    vec3 diffuse = irradiance * albedo;
+    vec3 ambient = (diffuse * kD + spec) * ao;
+    // final color
+    vec3 color = emissive + ambient + Lo;
+
+    FragColor = vec4(color, alpha);
+}

@@ -1,0 +1,182 @@
+{
+  "builtin": [
+    {
+      "name": "rect",
+      "shader": {
+        "frag": "rect.frag",
+        "vert": "rect.vert"
+      }
+    },
+    {
+      "name": "texture",
+      "shader": {
+        "frag": "texture.frag",
+        "vert": "texture.vert"
+      }
+    },
+    {
+      "name": "fonts",
+      "shader": {
+        "frag": "fonts.frag",
+        "vert": "fonts.vert"
+      }
+    }
+  ],
+  "custom": [
+    {
+      "name": "cube",
+      "shader": {
+        "frag": "cube.frag",
+        "vert": "cube.vert"
+      }
+    },
+    {
+      "name": "triangle",
+      "shader": {
+        "frag": "triangle.frag",
+        "vert": "triangle.vert"
+      }
+    },
+    {
+      "name": "lightPBR",
+      "shader": {
+        "frag": "lightPBR.frag",
+        "vert": "lightPBR.vert"
+      }
+    },
+    {
+      "name": "screenShader",
+      "shader": {
+        "frag": "screenShader.frag",
+        "vert": "screenShader.vert"
+      }
+    },
+    {
+      "name": "texturePBR",
+      "shader": {
+        "frag": "texturePBR.frag",
+        "vert": "animationPBR.vert"
+      }
+    },
+    {
+      "name": "erCubeMapConvert",
+      "shader": {
+        "frag": "erCubeMapConvert.frag",
+        "vert": "cubeMap.vert"
+      }
+    },
+    {
+      "name": "skybox",
+      "shader": {
+        "frag": "skybox.frag",
+        "vert": "skybox.vert"
+      }
+    },
+    {
+      "name": "irConvolution",
+      "shader": {
+        "frag": "irConvolution.frag",
+        "vert": "cubeMap.vert"
+      }
+    },
+    {
+      "name": "prefilterMap",
+      "shader": {
+        "frag": "prefilter.frag",
+        "vert": "cubeMap.vert"
+      }
+    },
+    {
+      "name": "downSample",
+      "shader": {
+        "frag": "downSample.frag",
+        "vert": "downSample.vert"
+      }
+    },
+    {
+      "name": "upSample",
+      "shader": {
+        "frag": "upSample.frag",
+        "vert": "upSample.vert"
+      }
+    },
+    {
+      "name": "bloomSS",
+      "shader": {
+        "frag": "bloomSS.frag",
+        "vert": "bloomSS.vert"
+      }
+    },
+    {
+      "name": "gBuffer",
+      "shader": {
+        "frag": "gBuffer.frag",
+        "vert": "gBuffer.vert"
+      }
+    },
+    {
+      "name": "deferredShading",
+      "shader": {
+        "frag": "deferredShading.frag",
+        "vert": "deferredShading.vert"
+      }
+    },
+    {
+      "name": "ssao",
+      "shader": {
+        "frag": "ssao.frag",
+        "vert": "ssao.vert"
+      }
+    },
+    {
+      "name": "ssaoBlur",
+      "shader": {
+        "frag": "ssaoBlur.frag",
+        "vert": "ssaoBlur.vert"
+      }
+    },
+    {
+      "name": "FXAA",
+      "shader": {
+        "frag": "FXAA.frag",
+        "vert": "FXAA.vert"
+      }
+    },
+    {
+      "name": "pointLight",
+      "shader": {
+        "frag": "pointLight.frag",
+        "vert": "pointLight.vert"
+      }
+    },
+    {
+      "name": "depthOnly",
+      "shader": {
+        "frag": "depthOnly.frag",
+        "geom": "depthOnly.geom",
+        "vert": "depthOnly.vert"
+      }
+    },
+    {
+      "name": "particles",
+      "shader": {
+        "frag": "particles.frag",
+        "vert": "particles.vert"
+      }
+    },
+    {
+      "name": "shockwaves",
+      "shader": {
+        "frag": "shockwaves.frag",
+        "vert": "shockwaves.vert"
+      }
+    },
+    {
+      "name": "dirt",
+      "shader": {
+        "frag": "dirt.frag",
+        "vert": "dirt.vert"
+      }
+    }
+  ]
+}
