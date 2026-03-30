@@ -1,4 +1,4 @@
-# Zibuyin Duckbowling
+# Duckbowling
 
 ## How do I install these formulae?
 
